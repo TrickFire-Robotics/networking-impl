@@ -24,29 +24,28 @@ Server::~Server() {
 void * Server::MainServerLoop() {
 	Logger::Log(Logger::LEVEL_WARNING, "hey");
 
-	cout << "Running server!" << endl;
-	cout << "Listening!" << endl;
+	Logger::Log(Logger::LEVEL_INFO, "Starting server at port " + port);
+	Logger::Log(Logger::LEVEL_INFO_FINE, "Server listening on port " + port);
 	if (ServerListen() != 0) {
-		cerr << "Error listening on port " << port << endl;
+		Logger::Log(Logger::LEVEL_ERROR_CRITICAL, "Error listening on port " + port);
 		pthread_exit((void*) mainThread);
 	}
-
 	if (ServerAccept() != 0) {
-		cerr << "Error accepting connection" << endl;
+		Logger::Log(Logger::LEVEL_ERROR_CRITICAL, "Error accepting connection");
 		pthread_exit((void*) mainThread);
 	}
 
-	cout << "Accepted!" << endl;
+	Logger::Log(Logger::LEVEL_INFO_FINE, "Server accepted connection");
 
 	while (true) {
 		Packet received;
 
 		if (connection.receive(received) != Socket::Done) {
-			cerr << "Error receiving" << endl;
+			Logger::Log(Logger::LEVEL_ERROR, "Error receiving packet");
 			break;
 		}
 
-		cout << "Received packet!" << endl;
+		Logger::Log(Logger::LEVEL_INFO_VERY_FINE, "Received packet");
 
 		while (!received.endOfPacket()) {
 			int val;
