@@ -18,17 +18,31 @@ public:
 	static const int LEVEL_INFO_FINE = 8; // Fine logging, not quite method for method but still very verbose
 	static const int LEVEL_INFO_VERY_FINE = 9; // Absurd console-spam level of logging
 
+	/**
+	 * Log a message to the console with the specified level
+	 */
 	static inline void Log(int level, std::string message) {
 		if (level <= loggingLevel) {
-			std::cout << "[TrickFire Logger - " << LevelToString(level) << "] " << message << std::endl;
+			std::cout << "[TrickFire Logger - " << LevelToString(level) << "] "
+					<< message << std::endl;
 		}
 	}
+
+	/**
+	 * Set the minimum logging level to actually output at (for example, if I say LEVEL_INFO here, it will log everything from LEVEL_INFO all the way to LEVEL_ERROR_CRITICAL).
+	 */
 	static inline void SetLoggingLevel(int level) {
 		loggingLevel = level;
 	}
 private:
+	/**
+	 * The minimum logging level to output at.
+	 */
 	static int loggingLevel;
 
+	/**
+	 * Basically a ToString method for all of the level variables above.
+	 */
 	static inline std::string LevelToString(int level) {
 		switch (level) {
 		case LEVEL_NONE:
@@ -55,8 +69,6 @@ private:
 		return "[undefined logger level]";
 	}
 };
-
-int Logger::loggingLevel = Logger::LEVEL_INFO;
 }
 
 #endif /* LOGGER_H_ */
