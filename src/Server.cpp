@@ -22,8 +22,6 @@ Server::~Server() {
 }
 
 void * Server::MainServerLoop() {
-	Logger::Log(Logger::LEVEL_WARNING, "hey");
-
 	Logger::Log(Logger::LEVEL_INFO, "Starting server at port " + port);
 	Logger::Log(Logger::LEVEL_INFO_FINE, "Server listening on port " + port);
 	if (ServerListen() != 0) {
