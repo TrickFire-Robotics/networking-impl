@@ -27,9 +27,7 @@ public:
 	/**
 	 * Joins the thread of the server to the calling thread (used in test main methods to wait for the server to finish before exiting).
 	 */
-	inline void Join() {
-		pthread_join(mainThread, NULL);
-	}
+	void Join();
 
 private:
 	/**
@@ -55,16 +53,12 @@ private:
 	/**
 	 * Starts the server thread
 	 */
-	inline void Start() {
-		pthread_create(&mainThread, NULL, _ServerLoopWrapper, (void *) this);
-	}
+	void Start();
 
 	/**
 	 * A necessary helper because pthread_create doesn't like taking instance methods to start threads apparently.
 	 */
-	static inline void * _ServerLoopWrapper(void * server) {
-		return ((Server *) server)->MainServerLoop();
-	}
+	static void * _ServerLoopWrapper(void * server);
 
 	/**
 	 * Handles all server socket logic (accepting and listening for connections, receiving and sending packets, etc.)

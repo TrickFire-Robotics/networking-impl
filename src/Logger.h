@@ -21,12 +21,7 @@ public:
 	/**
 	 * Log a message to the console with the specified level
 	 */
-	static inline void Log(int level, std::string message) {
-		if (level <= loggingLevel) {
-			std::cout << "[TrickFire Logger - " << LevelToString(level) << "] "
-					<< message << std::endl;
-		}
-	}
+	static void Log(int level, std::string message);
 
 	/**
 	 * Set the minimum logging level to actually output at (for example, if I say LEVEL_INFO here, it will log everything from LEVEL_INFO all the way to LEVEL_ERROR_CRITICAL).
@@ -43,31 +38,7 @@ private:
 	/**
 	 * Basically a ToString method for all of the level variables above.
 	 */
-	static inline std::string LevelToString(int level) {
-		switch (level) {
-		case LEVEL_NONE:
-			return "None";
-		case LEVEL_ERROR_CRITICAL:
-			return "CRITICAL ERROR";
-		case LEVEL_ERROR_IMPORTANT:
-			return "Important Error";
-		case LEVEL_ERROR:
-			return "Error";
-		case LEVEL_WARNING:
-			return "Warning";
-		case LEVEL_INFO_CRITICAL:
-			return "CRITICAL INFO";
-		case LEVEL_INFO_IMPORTANT:
-			return "Important Info";
-		case LEVEL_INFO:
-			return "Info";
-		case LEVEL_INFO_FINE:
-			return "Info (fine)";
-		case LEVEL_INFO_VERY_FINE:
-			return "Info (very fine)";
-		}
-		return "[undefined logger level]";
-	}
+	static std::string LevelToString(int level);
 };
 }
 
