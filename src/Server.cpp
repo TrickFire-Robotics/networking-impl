@@ -17,6 +17,7 @@ Server::Server(int port) :
 	Start();
 }
 
+// TODO: Is this supposed to be all in a thread? Or should some of this be blocking calls in the constructor?
 void * Server::MainServerLoop() {
 	Logger::Log(Logger::LEVEL_INFO, "Starting server at port " + to_string(port));
 	Logger::Log(Logger::LEVEL_INFO_FINE, "Server listening on port " + to_string(port));
@@ -46,6 +47,13 @@ void * Server::MainServerLoop() {
 			int val;
 			received >> val;
 			cout << val << endl;
+
+			Packet tr;
+			tr << val;
+
+			if (connection.send(tr) != Socket::Done) {
+				Logger::Log(Logger::LEVEL_ERROR, "Error sending packet");
+			}
 		}
 	}
 

@@ -17,12 +17,24 @@ Client::Client(std::string address) :
 						+ std::to_string(port));
 	} else {
 		Logger::Log(Logger::LEVEL_INFO, "Client connected to server");
+		StartMessageThread();
 	}
 }
 
 Client::Client(std::string address, int port) :
 		address(address), port(port) {
-	Connect();
+	Logger::Log(Logger::LEVEL_INFO,
+				"Client connecting to server at " + address + ":"
+						+ std::to_string(port));
+
+		if (Connect() != 0) {
+			Logger::Log(Logger::LEVEL_ERROR_CRITICAL,
+					"Couldn't connect to server at " + address + ":"
+							+ std::to_string(port));
+		} else {
+			Logger::Log(Logger::LEVEL_INFO, "Client connected to server");
+			StartMessageThread();
+		}
 }
 
 int Client::Connect() {
@@ -45,8 +57,47 @@ int Client::operator<<(Packet& packet) {
 	return Send(packet);
 }
 
+void Client::SetMessageCallback(void (*msgCallback)(Packet&)) {
+	this->msgCallback = msgCallback;
+}
+
+void Client::StartMessageThread() {
+	pthread_create(&messageThread, NULL, _MessageLoopWrapper, (void *) this);
+}
+
+void * Client::_MessageLoopWrapper(void * client) {
+	return ((Client *) client)->MessageListeningLoop();
+}
+
+void * Client::MessageListeningLoop() {
+	Logger::Log(Logger::LEVEL_INFO_FINE, "Starting message listening loop thread.");
+
+	while (true) {
+			Packet received;
+
+			if (socket.receive(received) != Socket::Done) {
+				Logger::Log(Logger::LEVEL_ERROR, "Error receiving packet");
+				break;
+			}
+
+			Logger::Log(Logger::LEVEL_INFO_VERY_FINE, "Received packet");
+			msgCallback(received);
+			/*while (!received.endOfPacket()) {
+				int val;
+				received >> val;
+				std::cout << val << std::endl;
+			}*/
+		}
+
+	pthread_exit(&messageThread);
+}
+
 void Client::Disconnect() {
 	Logger::Log(Logger::LEVEL_INFO, "Client disconnecting");
 	socket.disconnect();
+}
+
+void Client::Join() {
+	pthread_join(messageThread, NULL);
 }
 }

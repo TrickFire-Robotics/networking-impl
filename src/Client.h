@@ -18,12 +18,23 @@ public:
 
 	int operator<<(Packet& packet);
 
+	void SetMessageCallback(void (*msgCallback)(Packet&));
+
+	void Join();
+
 private:
 	std::string address;
 	int port;
 	TcpSocket socket;
+	pthread_t messageThread;
+
+	void (*msgCallback)(Packet&) = NULL;
 
 	int Connect();
+
+	void StartMessageThread();
+	static void * _MessageLoopWrapper(void * client);
+	void * MessageListeningLoop();
 };
 }
 
