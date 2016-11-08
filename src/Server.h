@@ -22,7 +22,6 @@ public:
 	 * Starts a server using the specified port.
 	 */
 	Server(int port);
-	virtual ~Server();
 
 	/**
 	 * Joins the thread of the server to the calling thread (used in test main methods to wait for the server to finish before exiting).

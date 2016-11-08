@@ -17,10 +17,6 @@ Server::Server(int port) :
 	Start();
 }
 
-Server::~Server() {
-
-}
-
 void * Server::MainServerLoop() {
 	Logger::Log(Logger::LEVEL_INFO, "Starting server at port " + to_string(port));
 	Logger::Log(Logger::LEVEL_INFO_FINE, "Server listening on port " + to_string(port));
