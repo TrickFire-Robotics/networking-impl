@@ -9,30 +9,27 @@ namespace trickfire {
 
 Server::Server() :
 		port(DEFAULT_PORT) {
-	Start();
+	if (Start() != 0) {
+		Logger::Log(Logger::LEVEL_ERROR_CRITICAL, "Failed to start server.");
+	} else {
+		Logger::Log(Logger::LEVEL_INFO, "Server started");
+		pthread_create(&messageThread, NULL, _ServerMessageLoopWrapper,
+				(void *) this);
+	}
 }
 
 Server::Server(int port) :
 		port(port) {
-	Start();
+	if (Start() != 0) {
+		Logger::Log(Logger::LEVEL_ERROR_CRITICAL, "Failed to start server.");
+	} else {
+		Logger::Log(Logger::LEVEL_INFO, "Server started");
+		pthread_create(&messageThread, NULL, _ServerMessageLoopWrapper,
+				(void *) this);
+	}
 }
 
-// TODO: Is this supposed to be all in a thread? Or should some of this be blocking calls in the constructor?
-void * Server::MainServerLoop() {
-	Logger::Log(Logger::LEVEL_INFO, "Starting server at port " + to_string(port));
-	Logger::Log(Logger::LEVEL_INFO_FINE, "Server listening on port " + to_string(port));
-	if (ServerListen() != 0) {
-		Logger::Log(Logger::LEVEL_ERROR_CRITICAL,
-				"Error listening on port " + to_string(port));
-		pthread_exit((void*) mainThread);
-	}
-	if (ServerAccept() != 0) {
-		Logger::Log(Logger::LEVEL_ERROR_CRITICAL, "Error accepting connection");
-		pthread_exit((void*) mainThread);
-	}
-
-	Logger::Log(Logger::LEVEL_INFO_FINE, "Server accepted connection");
-
+void * Server::ServerMessageLoop() {
 	while (true) {
 		Packet received;
 
@@ -57,7 +54,7 @@ void * Server::MainServerLoop() {
 		}
 	}
 
-	pthread_exit((void*) mainThread);
+	pthread_exit((void*) messageThread);
 }
 
 int Server::ServerListen() {
@@ -74,15 +71,29 @@ int Server::ServerAccept() {
 	return 0;
 }
 
-void Server::Start() {
-	pthread_create(&mainThread, NULL, _ServerLoopWrapper, (void *) this);
+int Server::Start() {
+	Logger::Log(Logger::LEVEL_INFO,
+			"Starting server at port " + to_string(port));
+	if (ServerListen() != 0) {
+		Logger::Log(Logger::LEVEL_ERROR_CRITICAL,
+				"Error listening on port " + to_string(port));
+		return 1;
+	}
+	Logger::Log(Logger::LEVEL_INFO_FINE,
+			"Server listening on port " + to_string(port));
+	if (ServerAccept() != 0) {
+		Logger::Log(Logger::LEVEL_ERROR_CRITICAL, "Error accepting connection");
+		return 1;
+	}
+
+	return 0;
 }
 
-void * Server::_ServerLoopWrapper(void * server) {
-	return ((Server *) server)->MainServerLoop();
+void * Server::_ServerMessageLoopWrapper(void * server) {
+	return ((Server *) server)->ServerMessageLoop();
 }
 
 void Server::Join() {
-	pthread_join(mainThread, NULL);
+	pthread_join(messageThread, NULL);
 }
 }

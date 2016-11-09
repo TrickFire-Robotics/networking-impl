@@ -30,9 +30,9 @@ public:
 
 private:
 	/**
-	 * The main thread handling networking logic.
+	 * The thread handling message receiving.
 	 */
-	pthread_t mainThread;
+	pthread_t messageThread;
 
 	/**
 	 * The port the server is running on.
@@ -52,17 +52,17 @@ private:
 	/**
 	 * Starts the server thread
 	 */
-	void Start();
+	int Start();
 
 	/**
 	 * A necessary helper because pthread_create doesn't like taking instance methods to start threads apparently.
 	 */
-	static void * _ServerLoopWrapper(void * server);
+	static void * _ServerMessageLoopWrapper(void * server);
 
 	/**
-	 * Handles all server socket logic (accepting and listening for connections, receiving and sending packets, etc.)
+	 * Handles all server packet receiving
 	 */
-	void * MainServerLoop();
+	void * ServerMessageLoop();
 
 	/**
 	 * Listens for an incoming connection. Returns 0 on success, 1 on error.
