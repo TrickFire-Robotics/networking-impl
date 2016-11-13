@@ -28,7 +28,7 @@ private:
 	TcpSocket socket;
 	pthread_t messageThread;
 
-	void (*msgCallback)(Packet&) = NULL;
+	void (*msgCallback)(Packet&);
 
 	int Connect();
 

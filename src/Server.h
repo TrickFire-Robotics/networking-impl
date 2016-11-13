@@ -28,6 +28,19 @@ public:
 	 */
 	void Join();
 
+	int operator<<(Packet& packet);
+
+	/**
+	 * Sends a message
+	 */
+	int Send(Packet& packet);
+
+	void SetMessageCallback(void (*msgCallback)(Packet&));
+
+	inline bool IsConnected() {
+		return connected;
+	}
+
 private:
 	/**
 	 * The thread handling message receiving.
@@ -50,9 +63,11 @@ private:
 	TcpSocket connection;
 
 	/**
-	 * Starts the server thread
+	 * An event for when a packet is received.
 	 */
-	int Start();
+	void (*msgCallback)(Packet&);
+
+	bool connected;
 
 	/**
 	 * A necessary helper because pthread_create doesn't like taking instance methods to start threads apparently.
