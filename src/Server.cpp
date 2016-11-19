@@ -25,12 +25,14 @@ void * Server::ServerMessageLoop() {
 	if (ServerListen() != 0) {
 		Logger::Log(Logger::LEVEL_ERROR_CRITICAL,
 				"Error listening on port " + to_string(port));
+		connected = false;
 		pthread_exit(&messageThread);
 	}
 	Logger::Log(Logger::LEVEL_INFO_FINE,
 			"Server listening on port " + to_string(port));
 	if (ServerAccept() != 0) {
 		Logger::Log(Logger::LEVEL_ERROR_CRITICAL, "Error accepting connection");
+		connected = false;
 		pthread_exit(&messageThread);
 	}
 
@@ -49,10 +51,12 @@ void * Server::ServerMessageLoop() {
 	}
 
 	pthread_exit((void*) messageThread);
+	connected = false;
 }
 
 int Server::ServerListen() {
 	if (listener.listen(port) != Socket::Done) {
+		connected = false;
 		return 1;
 	}
 	return 0;
@@ -60,6 +64,7 @@ int Server::ServerListen() {
 
 int Server::ServerAccept() {
 	if (listener.accept(connection) != Socket::Done) {
+		connected = false;
 		return 1;
 	}
 	return 0;
@@ -77,6 +82,7 @@ int Server::Send(Packet& packet) {
 	Logger::Log(Logger::LEVEL_INFO_VERY_FINE, "Server sending packet");
 	if (connection.send(packet) != Socket::Done) {
 		Logger::Log(Logger::LEVEL_ERROR, "Error sending packet");
+		connected = false; // TODO: Is this a good idea? Probably not, get a better idea.
 		return 1;
 	}
 	return 0;
@@ -88,5 +94,11 @@ int Server::operator<<(Packet& packet) {
 
 void Server::SetMessageCallback(void (*msgCallback)(Packet& packet)) {
 	this->msgCallback = msgCallback;
+}
+
+void Server::Disconnect() {
+	listener.close();
+	connection.disconnect();
+	connected = false;
 }
 }
