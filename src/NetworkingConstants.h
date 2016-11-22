@@ -1,0 +1,6 @@
+#ifndef NETWORKINGCONSTANTS_H_
+#define NETWORKINGCONSTANTS_H_
+
+#define DRIVE_PACKET 1
+
+#endif
