@@ -2,5 +2,6 @@
 #define NETWORKINGCONSTANTS_H_
 
 #define DRIVE_PACKET 1
+#define AUTO_PACKET_1 2
 
 #endif
