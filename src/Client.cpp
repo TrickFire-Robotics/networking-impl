@@ -6,7 +6,7 @@
 namespace trickfire {
 
 Client::Client(std::string address) :
-		address(address), port(DEFAULT_PORT) {
+		address(address), port(DEFAULT_PORT), sfmlMessageThread(&Client::SfmlMessageListeningLoop, this) {
 	Logger::Log(Logger::LEVEL_INFO,
 			"Client connecting to server at " + address + ":"
 					+ std::to_string(port));
@@ -17,12 +17,12 @@ Client::Client(std::string address) :
 						+ std::to_string(port));
 	} else {
 		Logger::Log(Logger::LEVEL_INFO, "Client connected to server");
-		StartMessageThread();
+		sfmlMessageThread.launch();
 	}
 }
 
 Client::Client(std::string address, int port) :
-		address(address), port(port) {
+		address(address), port(port), sfmlMessageThread(&Client::SfmlMessageListeningLoop, this) {
 	Logger::Log(Logger::LEVEL_INFO,
 			"Client connecting to server at " + address + ":"
 					+ std::to_string(port));
@@ -33,7 +33,7 @@ Client::Client(std::string address, int port) :
 						+ std::to_string(port));
 	} else {
 		Logger::Log(Logger::LEVEL_INFO, "Client connected to server");
-		StartMessageThread();
+		sfmlMessageThread.launch();
 	}
 }
 
@@ -53,23 +53,11 @@ int Client::Send(Packet& packet) {
 	return 0;
 }
 
-int Client::operator<<(Packet& packet) {
-	return Send(packet);
-}
-
 void Client::SetMessageCallback(void (*msgCallback)(Packet&)) {
 	this->msgCallback = msgCallback;
 }
 
-void Client::StartMessageThread() {
-	pthread_create(&messageThread, NULL, _MessageLoopWrapper, (void *) this);
-}
-
-void * Client::_MessageLoopWrapper(void * client) {
-	return ((Client *) client)->MessageListeningLoop();
-}
-
-void * Client::MessageListeningLoop() {
+void Client::SfmlMessageListeningLoop() {
 	Logger::Log(Logger::LEVEL_INFO_FINE,
 			"Starting message listening loop thread.");
 
@@ -84,8 +72,6 @@ void * Client::MessageListeningLoop() {
 		Logger::Log(Logger::LEVEL_INFO_VERY_FINE, "Received packet");
 		msgCallback(received);
 	}
-
-	pthread_exit(&messageThread);
 }
 
 void Client::Disconnect() {
@@ -94,6 +80,7 @@ void Client::Disconnect() {
 }
 
 void Client::Join() {
-	pthread_join(messageThread, NULL);
+	//pthread_join(messageThread, NULL);
+	sfmlMessageThread.wait();
 }
 }

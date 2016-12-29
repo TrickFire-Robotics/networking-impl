@@ -3,6 +3,7 @@
 
 #include <string>
 #include <SFML/Network.hpp>
+#include <SFML/System.hpp>
 
 using namespace sf;
 
@@ -16,8 +17,6 @@ public:
 	int Send(Packet& packet);
 	void Disconnect();
 
-	int operator<<(Packet& packet);
-
 	void SetMessageCallback(void (*msgCallback)(Packet&));
 
 	void Join();
@@ -26,16 +25,14 @@ private:
 	std::string address;
 	int port;
 	TcpSocket socket;
-	pthread_t messageThread;
+	Thread sfmlMessageThread;
 
 	void (*msgCallback)(Packet&);
 
 	int Connect();
 
-	void StartMessageThread();
-	static void * _MessageLoopWrapper(void * client);
-	void * MessageListeningLoop();
+	void SfmlMessageListeningLoop();
 };
 }
 
-#endif /* CLIENT_H_ */
+#endif
