@@ -8,35 +8,36 @@ using namespace std;
 namespace trickfire {
 
 Server::Server() :
-		port(DEFAULT_PORT), connected(false), msgCallback(NULL) {
-	pthread_create(&messageThread, NULL, _ServerMessageLoopWrapper,
-			(void *) this);
+		messageThread(&Server::ServerMessageLoop, this), port(DEFAULT_PORT), msgCallback(0), connected(false) {
+	messageThread.launch();
 }
 
 Server::Server(int port) :
-		port(port), connected(false), msgCallback(NULL) {
-	pthread_create(&messageThread, NULL, _ServerMessageLoopWrapper,
-			(void *) this);
+		messageThread(&Server::ServerMessageLoop, this), port(port), msgCallback(0), connected(false) {
+	messageThread.launch();
 }
 
-void * Server::ServerMessageLoop() {
+void Server::ServerMessageLoop() {
 	Logger::Log(Logger::LEVEL_INFO,
 			"Starting server at port " + to_string(port));
 	if (ServerListen() != 0) {
 		Logger::Log(Logger::LEVEL_ERROR_CRITICAL,
 				"Error listening on port " + to_string(port));
 		connected = false;
-		pthread_exit(&messageThread);
+		return;
 	}
+
 	Logger::Log(Logger::LEVEL_INFO_FINE,
 			"Server listening on port " + to_string(port));
 	if (ServerAccept() != 0) {
 		Logger::Log(Logger::LEVEL_ERROR_CRITICAL, "Error accepting connection");
 		connected = false;
-		pthread_exit(&messageThread);
+		return;
 	}
 
 	connected = true;
+
+	Logger::Log(Logger::LEVEL_INFO, "Server connected to " + connection.getRemoteAddress().toString());
 
 	while (true) {
 		Packet received;
@@ -50,7 +51,6 @@ void * Server::ServerMessageLoop() {
 		msgCallback(received);
 	}
 
-	pthread_exit((void*) messageThread);
 	connected = false;
 }
 
@@ -70,12 +70,8 @@ int Server::ServerAccept() {
 	return 0;
 }
 
-void * Server::_ServerMessageLoopWrapper(void * server) {
-	return ((Server *) server)->ServerMessageLoop();
-}
-
 void Server::Join() {
-	pthread_join(messageThread, NULL);
+	messageThread.wait();
 }
 
 int Server::Send(Packet& packet) {
@@ -88,10 +84,6 @@ int Server::Send(Packet& packet) {
 	return 0;
 }
 
-int Server::operator<<(Packet& packet) {
-	return Send(packet);
-}
-
 void Server::SetMessageCallback(void (*msgCallback)(Packet& packet)) {
 	this->msgCallback = msgCallback;
 }
@@ -100,5 +92,6 @@ void Server::Disconnect() {
 	listener.close();
 	connection.disconnect();
 	connected = false;
+	messageThread.terminate();
 }
 }

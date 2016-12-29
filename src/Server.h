@@ -3,6 +3,7 @@
 #define DEFAULT_PORT 25565
 
 #include <SFML/Network.hpp>
+#include <SFML/System.hpp>
 
 using namespace sf;
 
@@ -29,8 +30,6 @@ public:
 	 */
 	void Join();
 
-	int operator<<(Packet& packet);
-
 	/**
 	 * Sends a message
 	 */
@@ -47,7 +46,7 @@ private:
 	/**
 	 * The thread handling message receiving.
 	 */
-	pthread_t messageThread;
+	Thread messageThread;
 
 	/**
 	 * The port the server is running on.
@@ -72,14 +71,9 @@ private:
 	bool connected;
 
 	/**
-	 * A necessary helper because pthread_create doesn't like taking instance methods to start threads apparently.
-	 */
-	static void * _ServerMessageLoopWrapper(void * server);
-
-	/**
 	 * Handles all server packet receiving
 	 */
-	void * ServerMessageLoop();
+	void ServerMessageLoop();
 
 	/**
 	 * Listens for an incoming connection. Returns 0 on success, 1 on error.
@@ -92,4 +86,4 @@ private:
 	int ServerAccept();
 };
 }
-#endif /* SERVER_H_ */
+#endif
