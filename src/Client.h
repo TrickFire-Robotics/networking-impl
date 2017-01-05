@@ -26,6 +26,7 @@ private:
 	int port;
 	TcpSocket socket;
 	Thread sfmlMessageThread;
+	bool _connected;
 
 	void (*msgCallback)(Packet&);
 

@@ -6,7 +6,8 @@
 namespace trickfire {
 
 Client::Client(std::string address) :
-		address(address), port(DEFAULT_PORT), sfmlMessageThread(&Client::SfmlMessageListeningLoop, this) {
+		address(address), port(DEFAULT_PORT), sfmlMessageThread(
+				&Client::SfmlMessageListeningLoop, this) {
 	Logger::Log(Logger::LEVEL_INFO,
 			"Client connecting to server at " + address + ":"
 					+ std::to_string(port));
@@ -22,7 +23,8 @@ Client::Client(std::string address) :
 }
 
 Client::Client(std::string address, int port) :
-		address(address), port(port), sfmlMessageThread(&Client::SfmlMessageListeningLoop, this) {
+		address(address), port(port), sfmlMessageThread(
+				&Client::SfmlMessageListeningLoop, this) {
 	Logger::Log(Logger::LEVEL_INFO,
 			"Client connecting to server at " + address + ":"
 					+ std::to_string(port));
@@ -60,12 +62,14 @@ void Client::SetMessageCallback(void (*msgCallback)(Packet&)) {
 void Client::SfmlMessageListeningLoop() {
 	Logger::Log(Logger::LEVEL_INFO_FINE,
 			"Starting message listening loop thread.");
+	_connected = true;
 
-	while (true) {
+	while (_connected) {
 		Packet received;
 
 		if (socket.receive(received) != Socket::Done) {
 			Logger::Log(Logger::LEVEL_ERROR, "Error receiving packet");
+			_connected = false;
 			break;
 		}
 
@@ -77,10 +81,10 @@ void Client::SfmlMessageListeningLoop() {
 void Client::Disconnect() {
 	Logger::Log(Logger::LEVEL_INFO, "Client disconnecting");
 	socket.disconnect();
+	_connected = false;
 }
 
 void Client::Join() {
-	//pthread_join(messageThread, NULL);
 	sfmlMessageThread.wait();
 }
 }
