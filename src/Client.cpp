@@ -16,6 +16,7 @@ Client::Client(std::string address) :
 		Logger::Log(Logger::LEVEL_ERROR_CRITICAL,
 				"Couldn't connect to server at " + address + ":"
 						+ std::to_string(port));
+		_connected = false;
 	} else {
 		Logger::Log(Logger::LEVEL_INFO, "Client connected to server");
 		sfmlMessageThread.launch();
@@ -47,9 +48,11 @@ int Client::Connect() {
 }
 
 int Client::Send(Packet& packet) {
+	if (!_connected) return 1;
 	Logger::Log(Logger::LEVEL_INFO_VERY_FINE, "Client sending packet");
 	if (socket.send(packet) != Socket::Done) {
 		Logger::Log(Logger::LEVEL_ERROR, "Error sending packet");
+		_connected = false; // TODO: This might be too harsh?
 		return 1;
 	}
 	return 0;
