@@ -78,7 +78,7 @@ int Server::Send(Packet& packet) {
 	Logger::Log(Logger::LEVEL_INFO_VERY_FINE, "Server sending packet");
 	if (connection.send(packet) != Socket::Done) {
 		Logger::Log(Logger::LEVEL_ERROR, "Error sending packet");
-		connected = false; // TODO: Is this a good idea? Probably not, get a better idea.
+		connected = false;
 		return 1;
 	}
 	return 0;
